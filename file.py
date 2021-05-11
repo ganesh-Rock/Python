@@ -1,58 +1,97 @@
-from TwitterAPI import TwitterAPI
+#!/bin/python3
+
+#system packages
+import sys
 import json
-from datetime import datetime
 import time
 import random
+from datetime import datetime
 
-f = open('/home/OhmGanesh/Downloads/training_data.json')
-data = json.load(f)
-val = input("Enter your value: ")
-year = time.strftime("%Y") # or "%y"
-x=int(year)-int(val)
-print(x)
-lst = []
-lst1 =[]
-for i in data:
-    datestring = i['pub_date']
-    dt = datetime.strptime(datestring, '%Y-%m-%d')
-    if(dt.year==x):
-        lst.append(i['impact_factor'])
+#Third party packages
+from TwitterAPI import TwitterAPI
 
-x1=max(lst)
+class Twiiter:
 
-for i in data:
-    datestring = i['pub_date']
-    dt = datetime.strptime(datestring, '%Y-%m-%d')
-    if (dt.year == x):
-        if(i['impact_factor']==x1):
-                lst1.append(i)
+    def biggiest_one(self, f):
+
+        data = json.load(f)
+        val  = input("Enter your value: ")
+        year = time.strftime("%Y")
+        x    = int(year) - int(val)
+        
+        lst  = list()
+        lst1 = list()
+        
+
+        for i in data:
+            datestring = i['pub_date']
+            dt = datetime.strptime(datestring, '%Y-%m-%d')
+
+            if(dt.year==x):
+                lst.append(i['impact_factor'])
+
+        x1 = max(lst)
+
+        for i in data:
+            datestring = i['pub_date']
+            dt = datetime.strptime(datestring, '%Y-%m-%d')
+            
+            if (dt.year == x):
+                
+                if(i['impact_factor']==x1):
+                        lst1.append(i)
 
 
-random_num = random.choice(lst1)
-print(type(random_num))
-api = TwitterAPI('Y9VkZFCua2lFUnkTBvC8Jit1F',
-                 'rC6w28rVMHhbHhqGnUpkUlloiXFBIuTpEiNBpxOPJJzZKVjlQL',
-                 '1390159632975290371-3LjIRKz9akHp2svstaC28ZIMREvOPC',
-                 '9oXkNQcHU3wWiGtoCiArgYmRI67ilTGKsvHWaRrzCVZrZ')
+        return random.choice(lst1)
 
-user_id = "1390159632975290371"
-message_text = json.dumps(random_num)
 
-event = {
-    "event": {
-        "type": "message_create",
-        "message_create": {
-            "target": {
-                "recipient_id": user_id
-            },
-            "message_data": {
-                "text": message_text
+    def twitter_call(self, article, recipient_id):
+
+        api = TwitterAPI('Y9VkZFCua2lFUnkTBvC8Jit1F',
+                        'rC6w28rVMHhbHhqGnUpkUlloiXFBIuTpEiNBpxOPJJzZKVjlQL',
+                        '1390159632975290371-3LjIRKz9akHp2svstaC28ZIMREvOPC',
+                        '9oXkNQcHU3wWiGtoCiArgYmRI67ilTGKsvHWaRrzCVZrZ')
+        
+        message_text = json.dumps(article)
+
+        event = {
+            "event": {
+                "type": "message_create",
+                "message_create": {
+                    "target": {
+                        "recipient_id": recipient_id
+                    },
+                    "message_data": {
+                        "text": message_text
+                    }
+                }
             }
         }
-    }
-}
 
-r = api.request('direct_messages/events/new', json.dumps(event))
-print('SUCCESS' if r.status_code == 200 else 'PROBLEM: ' + r.text)
+        r = api.request('direct_messages/events/new', json.dumps(event))
+        print('SUCCESS' if r.status_code == 200 else 'PROBLEM: ' + r.text)
 
-f.close()
+
+if __name__ == '__main__':
+
+    input_file = open(sys.argv[1])
+    user_id = "1390159632975290371"
+    
+    twitter_obj = Twiiter()
+    #this would threw the big article in the json file
+    output_one = twitter_obj.biggiest_one(input_file)
+
+    print(output_one)
+
+    #sending the tweet form a particular one
+    twitter_obj.twitter_call(output_one, user_id)
+
+
+
+
+    
+
+
+
+
+

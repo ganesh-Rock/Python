@@ -3,6 +3,10 @@ import json
 from datetime import datetime
 import time
 import random
+from file import biggiest_one
+from file import twitter_call
+
+
 
 f = open('/home/OhmGanesh/Downloads/training_data.json')
 data = json.load(f)
